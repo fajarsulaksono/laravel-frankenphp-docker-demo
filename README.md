@@ -29,35 +29,115 @@ Demonstrasi lengkap aplikasi Laravel yang dijalankan dengan **FrankenPHP** (PHP 
 
 ## 🔧 Instalasi & Setup
 
-### 1. Clone Repository
+### Quick Start (First Time Setup)
+
+Jika ini pertama kali Anda setup project ini, ikuti langkah-langkah di bawah:
+
+#### **Step 1: Clone Repository**
 ```bash
 git clone https://github.com/YOUR_USERNAME/laravel-frankenphp-docker-demo.git
 cd laravel-frankenphp-docker-demo
 ```
 
-### 2. Buat File Environment
+#### **Step 2: Setup Environment File**
 ```bash
 cp .env.example .env
 ```
 
-### 3. Build Docker Images
+Edit file `.env` jika ada pengaturan khusus (port, password, dll):
+```bash
+nano .env    # atau gunakan editor favorit Anda
+```
+
+#### **Step 3: Build Docker Images** ⏱️ *Ini bisa memakan waktu 5-15 menit*
 ```bash
 docker compose build
 ```
 
-### 4. Generate Application Key (Otomatis via Entrypoint)
-Key akan di-generate otomatis saat container pertama kali dijalankan.
+**Output yang diharapkan:**
+```
+...
+[+] Building 45.3s (14/14) FINISHED
+ => => naming to ghcr.io/dunglas/frankenphp:latest
+[+] Building 22.4s (4/4) FINISHED
+ => => naming to laravel-frankenphp-docker-demo-app:latest
+```
 
-### 5. Jalankan Container
+#### **Step 4: Start All Containers**
 ```bash
 docker compose up -d
 ```
 
-### 6. Jalankan Migrasi Database (Otomatis)
-Database akan di-migrate otomatis saat container startup. Jika ingin manual:
+**Check status containers:**
 ```bash
-docker compose exec app php artisan migrate
+docker compose ps
 ```
+
+**Expected output:**
+```
+NAME                          COMMAND                  SERVICE      STATUS
+laravel-frankenphp-app        /bin/bash -c "chmod +x…   app          Up 2 seconds (healthy)
+laravel-frankenphp-db         docker-entrypoint.sh…    db           Up 3 seconds (healthy)
+laravel-frankenphp-redis      redis-server             redis        Up 2 seconds (healthy)
+laravel-frankenphp-phpmyadmin…apache2-foreground       phpmyadmin   Up 2 seconds
+laravel-frankenphp-jaeger     /go/bin/all-in-one-da…   jaeger       Up 1 second (healthy)
+```
+
+#### **Step 5: Verify Installation**
+Tunggu beberapa saat agar semua service fully initialized, lalu cek:
+
+```bash
+# Check app logs
+docker compose logs app
+
+# Verify app is running
+curl http://localhost
+
+# Verify database connection
+docker compose exec app php artisan tinker
+> DB::connection()->getPdo()  # Tekan Enter, jika berhasil akan return PDO object
+```
+
+#### **Step 6: Access The Application**
+Setelah semua service running, akses aplikasi di browser:
+
+- 🌐 **Laravel App**: http://localhost
+- 🗄️ **phpMyAdmin**: http://localhost:8080 (username: `laravel`, password: `password`)
+- 📊 **Jaeger UI**: http://localhost:16686
+- 💾 **Database**: localhost:3306 (host: `db`, user: `laravel`, password: `password`)
+- 🔴 **Redis**: localhost:6379
+
+---
+
+### Stop dan Remove Containers
+
+Jika ingin menghentikan development:
+
+```bash
+# Stop all containers (data tetap tersimpan)
+docker compose stop
+
+# Start kembali
+docker compose start
+
+# Stop dan remove containers (tapi data tetap di volume)
+docker compose down
+
+# Stop dan remove semuanya termasuk volumes (WARNING: DATA AKAN HILANG!)
+docker compose down -v
+```
+
+---
+
+### Automated Setup (Apa yang otomatis terjadi)
+
+Saat container pertama kali dimulai, file `docker/entrypoint.sh` secara otomatis akan:
+1. ✅ Menggenerate `APP_KEY` jika belum ada
+2. ✅ Menjalankan database migrations
+3. ✅ Set proper permissions untuk folders
+4. ✅ Start Laravel development server
+
+**Jadi Anda tidak perlu manual jalankan perintah ini, semua sudah otomatis!**
 
 ## ▶️ Menjalankan Aplikasi
 
@@ -255,37 +335,249 @@ Di sini Anda bisa:
 
 ## 🐛 Troubleshooting
 
-### Port 80 sudah digunakan
-Edit `docker-compose.yml` dan ubah port:
+### Masalah Saat First Time Setup
+
+#### **Container tidak starting (exit immediately)**
+```bash
+# Check logs untuk error details
+docker compose logs app
+
+# Solution: Rebuild dengan fresh start
+docker compose down -v  # Remove containers dan volumes
+docker compose build --no-cache
+docker compose up -d
+```
+
+#### **Port sudah digunakan**
+Jika port 80 sudah digunakan oleh service lain, edit `docker-compose.yml`:
 ```yaml
 ports:
-  - "8080:80"  # Akses via http://localhost:8080
+  - "8000:80"  # Ubah dari 80 ke 8000
 ```
+Kemudian restart: `docker compose up -d`
 
-### Database connection error
-Pastikan service `db` sudah running:
+#### **Database connection error**
 ```bash
-docker compose ps
+# Wait database fully initialized
+docker compose logs db | tail -20
+
+# Manual check connection
+docker compose exec app php artisan tinker
+> DB::connection()->getPdo()
+
+# If still error, try refresh:
+docker compose exec app php artisan migrate:refresh
 ```
 
-### Permission denied errors
-Jalankan:
+#### **Permission denied di storage folder**
 ```bash
 docker compose exec app chmod -R 775 storage bootstrap/cache
+docker compose exec app chown -R www-data:www-data storage bootstrap/cache
 ```
 
-### Clear cache
+#### **Redis connection failed**
+```bash
+# Check Redis is running
+docker compose ps redis
+
+# Verify connection
+docker compose exec app redis-cli -h redis ping
+# Output should be: PONG
+```
+
+#### **APP_KEY belum di-generate**
+Jika Anda lihat error `No application encryption key has been specified.`:
+```bash
+docker compose exec app php artisan key:generate
+docker compose restart app
+```
+
+### Umum Troubleshooting
+
+#### **Clear cache dan config**
 ```bash
 docker compose exec app php artisan config:clear
 docker compose exec app php artisan cache:clear
+docker compose exec app php artisan view:clear
 ```
 
-## 📚 Resources
+#### **Jaeger tidak menampilkan traces**
+```bash
+# Check Jaeger is running
+docker compose ps jaeger
+
+# Check collector endpoint
+docker compose logs jaeger | grep "listening on"
+
+# Verify connection dari app
+docker compose exec app curl -v http://jaeger:14268/api/traces
+```
+
+#### **Containers stuck atau not responding**
+```bash
+# Force stop all
+docker compose down
+
+# Remove semua containers dan volumes
+docker compose down -v
+
+# Start fresh
+docker compose up -d
+```
+
+---
+
+## 💡 Useful Commands Reference
+
+### Accessing Services
+```bash
+# Enter application shell
+docker compose exec app bash
+
+# Database shell (MariaDB)
+docker compose exec db mariadb -u laravel -p -D laravel
+
+# Redis CLI
+docker compose exec redis redis-cli
+
+# Laravel Tinker REPL
+docker compose exec app php artisan tinker
+```
+
+### Common Laravel Commands
+```bash
+# Create new model with migration
+docker compose exec app php artisan make:model Post -m
+
+# Create controller
+docker compose exec app php artisan make:controller PostController
+
+# Run specific migration
+docker compose exec app php artisan migrate --path=database/migrations/2024_01_01_create_posts_table.php
+
+# Rollback migrations
+docker compose exec app php artisan migrate:rollback
+
+# Fresh migration with seeding
+docker compose exec app php artisan migrate:fresh --seed
+```
+
+### Debugging
+```bash
+# Real-time logs from app
+docker compose logs -f app --tail=50
+
+# Logs from specific service
+docker compose logs -f db    # MariaDB
+docker compose logs -f redis # Redis
+docker compose logs -f jaeger # Jaeger
+
+# Check container stats
+docker compose stats
+
+# Inspect container
+docker compose exec app php -v
+docker compose exec db mariadb --version
+```
+
+### Cleanup & Maintenance
+```bash
+# Remove unused images
+docker image prune
+
+# Remove unused volumes
+docker volume prune
+
+# Rebuild specific service
+docker compose build --no-cache app
+
+# Restart specific service
+docker compose restart app
+
+# Pull latest images
+docker compose pull
+docker compose up -d
+```
+
+## � Development Workflow
+
+### Local Development Setup
+
+Semua file aplikasi Anda sudah di-mount ke container, jadi changes lokal otomatis reflected:
+
+```bash
+# Edit files dari host machine
+nano app/Http/Controllers/HomeController.php
+
+# Changes otomatis available di container
+docker compose exec app php artisan tinker
+> include 'app/Http/Controllers/HomeController.php'
+```
+
+### Develop dengan Hot Reload
+
+Untuk development dengan file watcher (auto-reload), gunakan:
+
+```bash
+# Watch mode untuk CSS/JS
+docker compose exec app npm run dev
+
+# Atau jika pakai Vite
+docker compose exec app npm run dev -- --host 0.0.0.0
+```
+
+### Database Development
+
+```bash
+# Buat migration baru
+docker compose exec app php artisan make:migration create_products_table
+
+# Edit migration file (akan automount ke container)
+nano database/migrations/2024_*.php
+
+# Run migration
+docker compose exec app php artisan migrate
+
+# Access database via phpMyAdmin
+# http://localhost:8080
+```
+
+### Testing
+
+```bash
+# Run PHPUnit tests
+docker compose exec app php artisan test
+
+# Run specific test
+docker compose exec app php artisan test tests/Feature/UserTest.php
+
+# Run with coverage
+docker compose exec app php artisan test --coverage
+```
+
+### Git Workflow dalam Docker
+
+```bash
+# Jika ingin gunakan git dari dalam container
+docker compose exec app git status
+docker compose exec app git add .
+docker compose exec app git commit -m "feat: add new feature"
+
+# Atau pakai git dari host (lebih recommended)
+git status
+git add .
+git commit -m "feat: add new feature"
+```
+
+## �📚 Resources
 
 - [Laravel Documentation](https://laravel.com/docs)
 - [FrankenPHP Documentation](https://frankenphp.dev/)
-- [Docker Documentation](https://docs.docker.com/)
-
+- [Docker Documentation](https://docs.docker.com/)- [Docker Compose Documentation](https://docs.docker.com/compose/)
+- [MariaDB Documentation](https://mariadb.com/docs/)
+- [Redis Documentation](https://redis.io/documentation)
+- [OpenTelemetry PHP](https://opentelemetry.io/docs/instrumentation/php/)
+- [Jaeger Documentation](https://www.jaegertracing.io/docs/)
 ## 📝 Lisensi
 
 MIT License - silakan gunakan untuk project personal maupun komersial
