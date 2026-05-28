@@ -113,8 +113,8 @@ laravel-frankenphp-docker-demo/
 - Zero-downtime deployment
 - Port: 80
 
-### 2. **MySQL Database (db)**
-- Versi: MySQL 8.0
+### 2. **MariaDB Database (db)**
+- Versi: MariaDB Latest (drop-in replacement untuk MySQL)
 - Default database: `laravel`
 - Port: 3306
 - Health check: ✅ Included
