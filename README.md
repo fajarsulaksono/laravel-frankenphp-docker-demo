@@ -40,12 +40,21 @@ cd laravel-frankenphp-docker-demo
 cp .env.example .env
 ```
 
-### 3. Generate Application Key
+### 3. Build Docker Images
 ```bash
-docker compose exec app php artisan key:generate
+docker compose build
 ```
 
-### 4. Jalankan Migrasi Database
+### 4. Generate Application Key (Otomatis via Entrypoint)
+Key akan di-generate otomatis saat container pertama kali dijalankan.
+
+### 5. Jalankan Container
+```bash
+docker compose up -d
+```
+
+### 6. Jalankan Migrasi Database (Otomatis)
+Database akan di-migrate otomatis saat container startup. Jika ingin manual:
 ```bash
 docker compose exec app php artisan migrate
 ```
@@ -59,9 +68,20 @@ docker compose up -d
 
 Aplikasi akan tersedia di: `http://localhost`
 
+### Akses Services
+- **Laravel Application**: http://localhost
+- **phpMyAdmin**: http://localhost:8080
+- **Redis**: localhost:6379
+- **MySQL**: localhost:3306
+
 ### Stop Container
 ```bash
 docker compose down
+```
+
+### Lihat Log Application
+```bash
+docker compose logs -f app
 ```
 
 ## 📁 Struktur Folder
@@ -78,12 +98,37 @@ laravel-frankenphp-docker-demo/
 ├── storage/                  # Logs dan cache
 ├── tests/                    # Test files
 ├── docker/                   # Docker configurations
-│   ├── Dockerfile
-│   └── entrypoint.sh
-├── docker-compose.yml        # Docker Compose configuration
+│   ├── Dockerfile            # FrankenPHP setup
+│   └── entrypoint.sh         # Container startup script
+├── docker-compose.yml        # Docker services orchestration
 ├── .env.example              # Example environment file
 └── README.md                 # File ini
 ```
+
+## 🐳 Docker Services
+
+### 1. **FrankenPHP (app)**
+- Runtime PHP modern dengan Fiber support
+- Automatic HTTPS dengan Caddy
+- Zero-downtime deployment
+- Port: 80
+
+### 2. **MySQL Database (db)**
+- Versi: MySQL 8.0
+- Default database: `laravel`
+- Port: 3306
+- Health check: ✅ Included
+
+### 3. **Redis Cache (redis)**
+- Digunakan untuk caching dan queue
+- Versi: Redis 7 (Alpine)
+- Port: 6379
+- Health check: ✅ Included
+
+### 4. **phpMyAdmin (phpmyadmin)** (Optional)
+- GUI untuk manage MySQL database
+- Port: 8080
+- Username: `laravel` / Password: `password`
 
 ## 🎯 Perintah Berguna
 
@@ -107,17 +152,65 @@ docker compose exec app php artisan tinker
 
 ### Container Management
 ```bash
-# Lihat logs
+# Lihat logs real-time
 docker compose logs -f app
+
+# Lihat logs service tertentu
+docker compose logs -f db    # MySQL logs
+docker compose logs -f redis # Redis logs
 
 # Masuk ke container shell
 docker compose exec app bash
 
-# Rebuild images
+# Rebuild images (jika update Dockerfile)
 docker compose build --no-cache
 
-# Check status
+# Check status semua services
 docker compose ps
+
+# Restart specific service
+docker compose restart app
+```
+
+### Database Management
+```bash
+# Akses MySQL CLI
+docker compose exec db mysql -u laravel -p -D laravel
+
+# Reset database
+docker compose exec app php artisan migrate:refresh
+
+# Fresh migration dengan seeding
+docker compose exec app php artisan migrate:fresh --seed
+```
+
+## 🔐 Environment Variables
+
+Edit file `.env` untuk konfigurasi:
+
+```bash
+# Application
+APP_NAME=Laravel                    # Nama aplikasi
+APP_ENV=local                      # Environment (local, staging, production)
+APP_DEBUG=true                     # Debug mode
+APP_URL=http://localhost           # URL aplikasi
+APP_PORT=80                        # Port aplikasi
+
+# Database
+DB_CONNECTION=mysql                # Driver (mysql, pgsql)
+DB_HOST=db                         # Host database
+DB_PORT=3306                       # Port database
+DB_DATABASE=laravel                # Database name
+DB_USERNAME=laravel                # Database user
+DB_PASSWORD=password               # Database password
+
+# Cache & Queue
+CACHE_DRIVER=redis                 # Cache driver (redis, file)
+QUEUE_CONNECTION=redis             # Queue driver
+
+# Redis
+REDIS_HOST=redis                   # Redis host
+REDIS_PORT=6379                    # Redis port
 ```
 
 ## 🐛 Troubleshooting
