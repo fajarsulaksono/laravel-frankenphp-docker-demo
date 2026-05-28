@@ -53,7 +53,7 @@ services:
       - redis
     networks:
       - laravel
-    entrypoint: /bin/bash
+    entrypoint: /bin/sh
     command: -c "chmod +x /entrypoint.sh && /entrypoint.sh"
 
   # MariaDB Database
