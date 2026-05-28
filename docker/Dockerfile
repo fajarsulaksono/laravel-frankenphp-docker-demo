@@ -43,15 +43,19 @@ RUN composer install --no-interaction --no-dev --optimize-autoloader || true
 
 # Copy package files
 COPY package.json package-lock.json* /app/
+COPY vite.config.js tailwind.config.js postcss.config.js /app/
 
 # Install Node dependencies
 RUN npm ci --omit=dev || true
 
-# Copy the rest of application files
+# Copy the rest of application files (including resources/ for frontend)
 COPY . /app
 
-# Build frontend assets
-RUN npm run build || true
+# Create Laravel directories if they don't exist
+RUN mkdir -p /app/bootstrap/cache /app/storage/logs /app/storage/app /app/storage/framework
+
+# Build frontend assets (after resources/ is copied)
+RUN npm run build 2>/dev/null || true
 
 # Set permissions
 RUN chmod -R 755 /app/storage && \
@@ -63,4 +67,3 @@ EXPOSE 80
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost/health || exit 1
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=80"]
