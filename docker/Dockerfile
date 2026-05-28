@@ -1,18 +1,17 @@
-# FrankenPHP Base Image
-FROM dunglas/frankenphp:latest
+# FrankenPHP Base Image (Alpine Linux for lightweight)
+FROM dunglas/frankenphp:latest-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies (Alpine Linux)
+RUN apk add --no-cache \
     curl \
     git \
     zip \
     unzip \
     postgresql-client \
-    mysql-client \
-    && rm -rf /var/lib/apt/lists/*
+    mysql-client
 
 # Install PHP extensions
 RUN install-php-extensions \

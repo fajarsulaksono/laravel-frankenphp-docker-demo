@@ -189,31 +189,31 @@ laravel-frankenphp-docker-demo/
 ## 🐳 Docker Services
 
 ### 1. **FrankenPHP (app)**
-- Modern PHP runtime with Fiber support
+- Modern PHP runtime with Fiber support (Alpine Linux)
 - Automatic HTTPS with Caddy
 - Zero-downtime deployment
-- Port: 80
+- Port: 9000
 
 ### 2. **MariaDB Database (db)**
-- Version: MariaDB Latest (drop-in replacement for MySQL)
+- Version: MariaDB 11.4 Alpine (lightweight, drop-in replacement for MySQL)
 - Default database: `laravel`
 - Port: 3306
 - Health check: ✅ Included
 
 ### 3. **Redis Cache (redis)**
 - Used for caching and queue
-- Version: Redis 7 (Alpine)
+- Version: Redis 7 Alpine (lightweight)
 - Port: 6379
 - Health check: ✅ Included
 
 ### 4. **phpMyAdmin (phpmyadmin)** (Optional)
 - GUI for managing MariaDB database
-- Port: 8080
+- Port: 9001
 - Username: `laravel` / Password: `password`
 
 ### 5. **Jaeger (jaeger)**
 - Distributed tracing and monitoring for OpenTelemetry
-- Query UI: http://localhost:16686
+- Query UI: http://localhost:9016
 - Collector Port: 14268 (HTTP)
 - Agent Port: 6831 (UDP)
 
