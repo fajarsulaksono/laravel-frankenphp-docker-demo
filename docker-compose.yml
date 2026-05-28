@@ -54,7 +54,7 @@ services:
     networks:
       - laravel
     entrypoint: /bin/sh
-    command: -c "chmod +x /entrypoint.sh && /entrypoint.sh"
+    command: /entrypoint.sh
 
   # MariaDB Database
   db:
