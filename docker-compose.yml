@@ -100,7 +100,7 @@ services:
     container_name: laravel-frankenphp-jaeger
     restart: unless-stopped
     ports:
-      - "${JAEGER_UI_PORT:-6831}:6831/udp"
+      - "${JAEGER_AGENT_PORT:-6831}:6831/udp"
       - "${JAEGER_COLLECTOR_PORT:-14268}:14268"
       - "${JAEGER_QUERY_PORT:-16686}:16686"
     environment:

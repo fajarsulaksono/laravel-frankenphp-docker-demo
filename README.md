@@ -101,9 +101,9 @@ docker compose exec app php artisan tinker
 #### **Step 6: Access The Application**
 Once all services are running, access the application in your browser:
 
-- 🌐 **Laravel App**: http://localhost
-- 🗄️ **phpMyAdmin**: http://localhost:8080 (username: `laravel`, password: `password`)
-- 📊 **Jaeger UI**: http://localhost:16686
+- 🌐 **Laravel App**: http://localhost:9000 (configurable via `APP_PORT`)
+- 🗄️ **phpMyAdmin**: http://localhost:9001 (username: `laravel`, password: `password`, configurable via `PMA_PORT`)
+- 📊 **Jaeger UI**: http://localhost:9016 (configurable via `JAEGER_QUERY_PORT`)
 - 💾 **Database**: localhost:3306 (host: `db`, user: `laravel`, password: `password`)
 - 🔴 **Redis**: localhost:6379
 
@@ -149,11 +149,11 @@ docker compose up -d
 The application will be available at: `http://localhost`
 
 ### Access Services
-- **Laravel Application**: http://localhost
-- **phpMyAdmin**: http://localhost:8080
+- **Laravel Application**: http://localhost:9000 (or configured port via `APP_PORT`)
+- **phpMyAdmin**: http://localhost:9001 (or configured port via `PMA_PORT`)
 - **Redis**: localhost:6379
 - **MariaDB**: localhost:3306
-- **Jaeger UI**: http://localhost:16686
+- **Jaeger UI**: http://localhost:9016 (or configured port via `JAEGER_QUERY_PORT`)
 
 ### Stop Containers
 ```bash
@@ -277,27 +277,34 @@ Edit the `.env` file to configure settings:
 
 ```bash
 # Application
-APP_NAME=Laravel                    # Application name
-APP_ENV=local                       # Environment (local, staging, production)
-APP_DEBUG=true                      # Debug mode
-APP_URL=http://localhost            # Application URL
-APP_PORT=80                         # Application port
+APP_NAME="Laravel FrankenPHP"         # Application name
+APP_ENV=local                          # Environment (local, staging, production)
+APP_DEBUG=true                         # Debug mode
+APP_URL=http://localhost:9000          # Application URL (include port)
+APP_PORT=9000                          # Application port (use custom port to avoid conflicts)
 
 # Database
-DB_CONNECTION=mysql                 # Driver (mysql, pgsql)
-DB_HOST=db                          # Database host
-DB_PORT=3306                        # Database port
-DB_DATABASE=laravel                 # Database name
-DB_USERNAME=laravel                 # Database user
-DB_PASSWORD=password                # Database password
+DB_CONNECTION=mysql                    # Driver (mysql, pgsql)
+DB_HOST=db                             # Database host
+DB_PORT=3306                           # Database port
+DB_DATABASE=laravel                    # Database name
+DB_USERNAME=laravel                    # Database user
+DB_PASSWORD=password                   # Database password
+DB_ROOT_PASSWORD=root                  # Database root password
 
 # Cache & Queue
-CACHE_DRIVER=redis                  # Cache driver (redis, file)
-QUEUE_CONNECTION=redis              # Queue driver
+CACHE_DRIVER=redis                     # Cache driver (redis, file)
+QUEUE_CONNECTION=redis                 # Queue driver
 
 # Redis
-REDIS_HOST=redis                    # Redis host
-REDIS_PORT=6379                     # Redis port
+REDIS_HOST=redis                       # Redis host
+REDIS_PORT=6379                        # Redis port
+
+# phpMyAdmin
+PMA_PORT=9001                          # phpMyAdmin port (use custom port to avoid conflicts)
+
+# Jaeger
+JAEGER_QUERY_PORT=9016                 # Jaeger UI port (use custom port to avoid conflicts)
 ```
 
 ## 📊 OpenTelemetry & Jaeger Distributed Tracing
@@ -349,12 +356,22 @@ docker compose up -d
 ```
 
 #### **Port already in use**
-If port 80 is already used by another service, edit `docker-compose.yml`:
-```yaml
-ports:
-  - "8000:80"  # Change from 80 to 8000
+If any default port is already used by another service, you can easily change it in `.env` file:
+
+```bash
+# Change application port
+APP_PORT=9000        # Default is 9000, change to 8000, 3000, etc.
+
+# Change phpMyAdmin port
+PMA_PORT=9001        # Default is 9001, change as needed
+
+# Change Jaeger UI port
+JAEGER_QUERY_PORT=9016  # Default is 9016, change as needed
 ```
-Then restart: `docker compose up -d`
+
+Then restart: `docker compose down && docker compose up -d`
+
+> **Tip:** Using custom ports (like 9000, 9001, 9016) helps avoid conflicts with system services and other applications.
 
 #### **Database connection error**
 ```bash
