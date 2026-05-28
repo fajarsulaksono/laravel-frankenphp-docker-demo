@@ -51,9 +51,6 @@ RUN npm ci --omit=dev || true
 # Copy the rest of application files (including resources/ for frontend)
 COPY . /app
 
-# Make entrypoint executable
-RUN chmod +x /app/docker/entrypoint.sh
-
 # Create Laravel directories if they don't exist
 RUN mkdir -p /app/bootstrap/cache /app/storage/logs /app/storage/app /app/storage/framework
 
