@@ -1,11 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
 
-Route::get('/', function () {
-    return view('app');
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/api/health', function () {
-    return response()->json(['status' => 'ok', 'message' => 'Laravel FrankenPHP is running']);
-});
+// API Routes
+Route::get('/api/demo', [HomeController::class, 'getDemoData']);
+Route::get('/api/health', [HomeController::class, 'health']);
