@@ -52,8 +52,7 @@ services:
       - redis
     networks:
       - laravel
-    entrypoint: /bin/sh
-    command: /app/docker/entrypoint.sh
+    command: sh -c ". /app/docker/entrypoint.sh"
 
   # MariaDB Database
   db:
