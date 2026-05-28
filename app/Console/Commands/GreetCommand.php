@@ -11,25 +11,22 @@ class GreetCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'greet {name=World} {--greeting=Hello}';
+    protected $signature = 'greet';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Greet someone with a custom message';
+    protected $description = 'Display a simple Hello World greeting';
 
     /**
      * Execute the console command.
      */
     public function handle(): void
     {
-        $name = $this->argument('name');
-        $greeting = $this->option('greeting');
-
-        $this->info("$greeting, $name! 👋");
+        $this->info("Hello World! 👋");
         $this->line("Welcome to Laravel FrankenPHP!");
-        $this->line("Running in: " . config('app.env'));
+        $this->line("Environment: " . config('app.env'));
     }
 }
