@@ -1,6 +1,10 @@
 # Laravel FrankenPHP Docker Demo
 
-A complete demonstration of a Laravel application running with **FrankenPHP** (modern PHP runtime) using **Docker** and **Docker Compose**.
+A complete demonstration of a **Laravel 13** application running with **FrankenPHP** (modern PHP runtime) using **Docker** and **Docker Compose**.
+
+**Frontend Stack:** Vue 3 + Tailwind CSS + Daisy UI
+
+**Frontend Stack:** Vue 3 + Tailwind CSS + Daisy UI
 
 ## 📋 Table of Contents
 
@@ -12,7 +16,26 @@ A complete demonstration of a Laravel application running with **FrankenPHP** (m
 - [Useful Commands](#useful-commands)
 - [Troubleshooting](#troubleshooting)
 
-## 🚀 About FrankenPHP
+## �️ Tech Stack
+
+### Backend
+- **Laravel 13** - Latest PHP framework
+- **FrankenPHP** - Modern PHP runtime with Fiber support
+- **Alpine Linux** - Lightweight base images
+
+### Frontend
+- **Vue 3** - Progressive JavaScript framework
+- **Tailwind CSS** - Utility-first CSS framework
+- **Daisy UI** - Component library built on Tailwind CSS
+- **Vite** - Fast build tool for development and production
+
+### Infrastructure
+- **Nginx** - Reverse proxy for high performance
+- **MariaDB 11.4** - Alpine-based database
+- **Redis 7** - Alpine-based cache and queue
+- **Jaeger** - Distributed tracing and OpenTelemetry
+
+## �🚀 About FrankenPHP
 
 **FrankenPHP** is a modern PHP runtime that:
 - ✅ Built on top of Caddy web server
