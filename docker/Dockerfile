@@ -28,7 +28,8 @@ RUN install-php-extensions \
     pcntl \
     tokenizer \
     redis \
-    gd
+    gd \
+    curl
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -42,6 +43,13 @@ RUN chmod -R 755 /app/storage && \
 
 # Install PHP dependencies
 RUN composer install --no-interaction --no-dev --optimize-autoloader
+
+# Install OpenTelemetry PHP packages (dapat diinstall nanti via Composer untuk production)
+# RUN composer require \
+#     open-telemetry/api \
+#     open-telemetry/sdk \
+#     open-telemetry/exporter-jaeger \
+#     open-telemetry/instrumentation-laravel
 
 # Expose port
 EXPOSE 80

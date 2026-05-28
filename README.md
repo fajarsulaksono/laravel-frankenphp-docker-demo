@@ -72,7 +72,8 @@ Aplikasi akan tersedia di: `http://localhost`
 - **Laravel Application**: http://localhost
 - **phpMyAdmin**: http://localhost:8080
 - **Redis**: localhost:6379
-- **MySQL**: localhost:3306
+- **MariaDB**: localhost:3306
+- **Jaeger UI**: http://localhost:16686
 
 ### Stop Container
 ```bash
@@ -126,9 +127,15 @@ laravel-frankenphp-docker-demo/
 - Health check: ✅ Included
 
 ### 4. **phpMyAdmin (phpmyadmin)** (Optional)
-- GUI untuk manage MySQL database
+- GUI untuk manage MariaDB database
 - Port: 8080
 - Username: `laravel` / Password: `password`
+
+### 5. **Jaeger (jaeger)**
+- Distributed tracing dan monitoring untuk OpenTelemetry
+- Query UI: http://localhost:16686
+- Collector Port: 14268 (HTTP)
+- Agent Port: 6831 (UDP)
 
 ## 🎯 Perintah Berguna
 
@@ -212,6 +219,39 @@ QUEUE_CONNECTION=redis             # Queue driver
 REDIS_HOST=redis                   # Redis host
 REDIS_PORT=6379                    # Redis port
 ```
+
+## 📊 OpenTelemetry & Jaeger Distributed Tracing
+
+### Setup OpenTelemetry di Laravel
+
+Untuk mengaktifkan OpenTelemetry dan mengirim trace ke Jaeger, install packages:
+
+```bash
+docker compose exec app composer require \
+    open-telemetry/api \
+    open-telemetry/sdk \
+    open-telemetry/exporter-jaeger \
+    open-telemetry/instrumentation-laravel
+```
+
+### Konfigurasi di `.env`:
+
+```bash
+OTEL_ENABLED=true                           # Aktifkan OpenTelemetry
+OTEL_SERVICE_NAME=laravel-frankenphp        # Nama service untuk tracing
+OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317  # Jaeger collector endpoint
+JAEGER_ENABLED=true                         # Aktifkan Jaeger exporter
+```
+
+### Akses Jaeger UI
+
+Buka browser: **http://localhost:16686**
+
+Di sini Anda bisa:
+- ✅ Lihat distributed traces dari Laravel application
+- ✅ Monitor performance setiap request
+- ✅ Identify bottlenecks & slow queries
+- ✅ Trace database queries, Redis calls, HTTP requests
 
 ## 🐛 Troubleshooting
 
