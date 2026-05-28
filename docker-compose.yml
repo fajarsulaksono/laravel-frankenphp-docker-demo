@@ -56,9 +56,9 @@ services:
     entrypoint: /bin/bash
     command: -c "chmod +x /entrypoint.sh && /entrypoint.sh"
 
-  # MariaDB Database (Alpine Linux for lightweight)
+  # MariaDB Database
   db:
-    image: mariadb:11.4-alpine
+    image: mariadb:11.4
     container_name: laravel-frankenphp-db
     restart: unless-stopped
     environment:
