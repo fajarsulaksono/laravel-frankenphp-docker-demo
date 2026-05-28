@@ -1,7 +1,28 @@
 version: '3.8'
 
 services:
-  # FrankenPHP Application
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: laravel-frankenphp-nginx
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-9000}:80"
+    volumes:
+      - .:/app
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - app
+    networks:
+      - laravel
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FrankenPHP Application (internal only, not exposed)
   app:
     build:
       context: .
@@ -13,7 +34,7 @@ services:
       - APP_NAME=${APP_NAME:-Laravel}
       - APP_ENV=${APP_ENV:-local}
       - APP_DEBUG=${APP_DEBUG:-true}
-      - APP_URL=${APP_URL:-http://localhost}
+      - APP_URL=${APP_URL:-http://localhost:9000}
       - APP_KEY=${APP_KEY:-}
       - LOG_CHANNEL=${LOG_CHANNEL:-stack}
       - DB_CONNECTION=${DB_CONNECTION:-mysql}
@@ -26,8 +47,6 @@ services:
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - QUEUE_CONNECTION=${QUEUE_CONNECTION:-redis}
-    ports:
-      - "${APP_PORT:-80}:80"
     volumes:
       - .:/app
       - ./docker/entrypoint.sh:/entrypoint.sh
@@ -118,6 +137,8 @@ volumes:
   dbdata:
     driver: local
   redisdata:
+    driver: local
+  nginx-logs:
     driver: local
 
 networks:

@@ -101,9 +101,9 @@ docker compose exec app php artisan tinker
 #### **Step 6: Access The Application**
 Once all services are running, access the application in your browser:
 
-- 🌐 **Laravel App**: http://localhost:9000 (configurable via `APP_PORT`)
-- 🗄️ **phpMyAdmin**: http://localhost:9001 (username: `laravel`, password: `password`, configurable via `PMA_PORT`)
-- 📊 **Jaeger UI**: http://localhost:9016 (configurable via `JAEGER_QUERY_PORT`)
+- 🌐 **Laravel App**: http://localhost:9000 (via Nginx reverse proxy)
+- 🗄️ **phpMyAdmin**: http://localhost:9001 (username: `laravel`, password: `password`)
+- 📊 **Jaeger UI**: http://localhost:9016
 - 💾 **Database**: localhost:3306 (host: `db`, user: `laravel`, password: `password`)
 - 🔴 **Redis**: localhost:6379
 
@@ -149,10 +149,10 @@ docker compose up -d
 The application will be available at: `http://localhost`
 
 ### Access Services
-- **Laravel Application**: http://localhost:9000 (or configured port via `APP_PORT`)
+- **Laravel Application**: http://localhost:9000 (via Nginx reverse proxy, configurable via `APP_PORT`)
 - **phpMyAdmin**: http://localhost:9001 (or configured port via `PMA_PORT`)
 - **Redis**: localhost:6379
-- **MariaDB**: localhost:3306
+- **MariaDB**: localhost:3306 (internal only)
 - **Jaeger UI**: http://localhost:9016 (or configured port via `JAEGER_QUERY_PORT`)
 
 ### Stop Containers
@@ -188,30 +188,50 @@ laravel-frankenphp-docker-demo/
 
 ## 🐳 Docker Services
 
-### 1. **FrankenPHP (app)**
+### Architecture Overview
+```
+Client Request → Nginx (Reverse Proxy) → FrankenPHP Application
+                     ↓
+              Internal Network (laravel)
+                     ↓
+         ┌────────────┬────────────┬──────────────┐
+         ↓            ↓            ↓              ↓
+    MariaDB       Redis         Jaeger      phpMyAdmin
+   (Database)   (Cache/Queue)  (Tracing)   (Database GUI)
+```
+
+### 1. **Nginx (nginx)** - Reverse Proxy
+- Lightweight HTTP server and reverse proxy
+- Serves static files (CSS, JS, images)
+- Proxies requests to FrankenPHP
+- Gzip compression enabled
+- Security headers configured
+- Port: 9000 (public, configurable via `APP_PORT`)
+
+### 2. **FrankenPHP (app)**
 - Modern PHP runtime with Fiber support (Alpine Linux)
 - Automatic HTTPS with Caddy
 - Zero-downtime deployment
-- Port: 9000
+- Port: 80 (internal only, not exposed - accessed via Nginx)
 
-### 2. **MariaDB Database (db)**
+### 3. **MariaDB Database (db)**
 - Version: MariaDB 11.4 Alpine (lightweight, drop-in replacement for MySQL)
 - Default database: `laravel`
 - Port: 3306
 - Health check: ✅ Included
 
-### 3. **Redis Cache (redis)**
+### 4. **Redis Cache (redis)**
 - Used for caching and queue
 - Version: Redis 7 Alpine (lightweight)
 - Port: 6379
 - Health check: ✅ Included
 
-### 4. **phpMyAdmin (phpmyadmin)** (Optional)
+### 5. **phpMyAdmin (phpmyadmin)** (Optional)
 - GUI for managing MariaDB database
 - Port: 9001
 - Username: `laravel` / Password: `password`
 
-### 5. **Jaeger (jaeger)**
+### 6. **Jaeger (jaeger)**
 - Distributed tracing and monitoring for OpenTelemetry
 - Query UI: http://localhost:9016
 - Collector Port: 14268 (HTTP)
@@ -359,11 +379,11 @@ docker compose up -d
 If any default port is already used by another service, you can easily change it in `.env` file:
 
 ```bash
-# Change application port
-APP_PORT=9000        # Default is 9000, change to 8000, 3000, etc.
+# Change Nginx/Application port
+APP_PORT=9000           # Default is 9000, change to 8000, 3000, etc.
 
 # Change phpMyAdmin port
-PMA_PORT=9001        # Default is 9001, change as needed
+PMA_PORT=9001           # Default is 9001, change as needed
 
 # Change Jaeger UI port
 JAEGER_QUERY_PORT=9016  # Default is 9016, change as needed
@@ -371,7 +391,7 @@ JAEGER_QUERY_PORT=9016  # Default is 9016, change as needed
 
 Then restart: `docker compose down && docker compose up -d`
 
-> **Tip:** Using custom ports (like 9000, 9001, 9016) helps avoid conflicts with system services and other applications.
+> **Tip:** The application is accessed through Nginx (reverse proxy), which is why you access it at `APP_PORT`. FrankenPHP itself runs on port 80 internally.
 
 #### **Database connection error**
 ```bash
