@@ -45,7 +45,7 @@ services:
       MARIADB_PASSWORD: ${DB_PASSWORD:-password}
       MARIADB_USER: ${DB_USERNAME:-laravel}
     ports:
-      - "${DB_PORT:-3306}:3306"
+      - "${DB_EXTERNAL_PORT:-3307}:3306"
     volumes:
       - dbdata:/var/lib/mysql
     networks:

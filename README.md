@@ -1,14 +1,12 @@
 # Laravel FrankenPHP Docker Demo
 
-A complete demonstration of a **Laravel 13** application running with **FrankenPHP** (modern PHP runtime) using **Docker** and **Docker Compose**.
+A complete demonstration of a **Laravel 13** application running in **Docker** with **FrankenPHP** (powered by Caddy web server), showcasing real-time service health monitoring, distributed tracing with Jaeger, and a modern frontend.
 
-**Frontend Stack:** Vue 3 + Tailwind CSS + Daisy UI
-
-**Frontend Stack:** Vue 3 + Tailwind CSS + Daisy UI
+**Stack:** FrankenPHP · Laravel 13 · Tailwind CSS · Google Font Outfit · MariaDB · Redis · Jaeger (OTel)
 
 ## 📋 Table of Contents
 
-- [About FrankenPHP](#about-frankenphp)
+- [About This Project](#about-this-project)
 - [Requirements](#requirements)
 - [Installation & Setup](#installation--setup)
 - [Running the Application](#running-the-application)
@@ -24,25 +22,28 @@ A complete demonstration of a **Laravel 13** application running with **FrankenP
 - **Alpine Linux** - Lightweight base images
 
 ### Frontend
-- **Vue 3** - Progressive JavaScript framework
 - **Tailwind CSS** - Utility-first CSS framework
-- **Daisy UI** - Component library built on Tailwind CSS
-- **Vite** - Fast build tool for development and production
+- **Google Font Outfit** - Professional typography
+- **Responsive Design** - Mobile-friendly layouts
 
 ### Infrastructure
-- **Nginx** - Reverse proxy for high performance
+- **Caddy** - HTTP server with automatic configuration
 - **MariaDB 11.4** - Alpine-based database
 - **Redis 7** - Alpine-based cache and queue
 - **Jaeger** - Distributed tracing and OpenTelemetry
+- **Docker Compose** - Multi-container orchestration
 
-## �🚀 About FrankenPHP
+## ℹ️ About FrankenPHP
 
-**FrankenPHP** is a modern PHP runtime that:
-- ✅ Built on top of Caddy web server
-- ✅ Supports async/await with Fiber
-- ✅ Zero-downtime deployment
-- ✅ Automatic HTTPS with Let's Encrypt
-- ✅ Better performance compared to traditional PHP-FPM
+**FrankenPHP** is a modern PHP runtime built on top of the [Caddy](https://caddyserver.com) web server:
+- ✅ Native PHP runtime — no PHP-FPM needed
+- ✅ Powered by Caddy with HTTP/2, HTTP/3 support
+- ✅ Supports Fiber for async/concurrent PHP tasks
+- ✅ `php_server` directive for zero-config PHP serving
+- ✅ Better performance compared to traditional Nginx + PHP-FPM
+- ✅ HTTP-only mode for local development (no HTTPS complexity)
+
+This project uses FrankenPHP's `dunglas/frankenphp:latest-alpine` image with a custom `Caddyfile` configured for HTTP-only local development.
 
 ## 📦 Requirements
 
@@ -98,12 +99,12 @@ docker compose ps
 
 **Expected output:**
 ```
-NAME                          COMMAND                  SERVICE      STATUS
-laravel-frankenphp-app        /bin/bash -c "chmod +x…   app          Up 2 seconds (healthy)
-laravel-frankenphp-db         docker-entrypoint.sh…    db           Up 3 seconds (healthy)
-laravel-frankenphp-redis      redis-server             redis        Up 2 seconds (healthy)
-laravel-frankenphp-phpmyadmin…apache2-foreground       phpmyadmin   Up 2 seconds
-laravel-frankenphp-jaeger     /go/bin/all-in-one-da…   jaeger       Up 1 second (healthy)
+NAME                            SERVICE      STATUS
+laravel-frankenphp-app          app          Up (healthy)
+laravel-frankenphp-db           db           Up (healthy)
+laravel-frankenphp-redis        redis        Up (healthy)
+laravel-frankenphp-phpmyadmin   phpmyadmin   Up
+laravel-frankenphp-jaeger       jaeger       Up (healthy)
 ```
 
 #### **Step 5: Verify Installation**
@@ -124,10 +125,10 @@ docker compose exec app php artisan tinker
 #### **Step 6: Access The Application**
 Once all services are running, access the application in your browser:
 
-- 🌐 **Laravel App**: http://localhost:9000 (via Nginx reverse proxy)
+- 🌐 **Laravel App**: http://localhost:9000 (FrankenPHP + Caddy)
 - 🗄️ **phpMyAdmin**: http://localhost:9001 (username: `laravel`, password: `password`)
 - 📊 **Jaeger UI**: http://localhost:9016
-- 💾 **Database**: localhost:3306 (host: `db`, user: `laravel`, password: `password`)
+- 💾 **Database**: localhost:3307 (host: `db`, internal port: `3306`, user: `laravel`, password: `password`)
 - 🔴 **Redis**: localhost:6379
 
 ---
@@ -154,11 +155,12 @@ docker compose down -v
 
 ### Automated Setup (What happens automatically)
 
-When containers start for the first time, the `docker/entrypoint.sh` script automatically:
-1. ✅ Generates `APP_KEY` if not already present
-2. ✅ Runs database migrations
-3. ✅ Sets proper permissions for folders
-4. ✅ Starts Laravel development server
+When containers start, the `docker/entrypoint-http.sh` script automatically:
+1. ✅ Creates required directories (`bootstrap/cache`, `storage/*`)
+2. ✅ Sets folder permissions (`chmod 777`)
+3. ✅ Clears old config/view/cache
+4. ✅ Warms up config cache (`php artisan config:cache`)
+5. ✅ Starts FrankenPHP with the custom `Caddyfile`
 
 **You don't need to run these commands manually, everything is automated!**
 
@@ -172,11 +174,13 @@ docker compose up -d
 The application will be available at: `http://localhost`
 
 ### Access Services
-- **Laravel Application**: http://localhost:9000 (via Nginx reverse proxy, configurable via `APP_PORT`)
-- **phpMyAdmin**: http://localhost:9001 (or configured port via `PMA_PORT`)
+- **Laravel Application**: http://localhost:9000 (FrankenPHP + Caddy, configurable via `APP_PORT`)
+- **phpMyAdmin**: http://localhost:9001 (configurable via `PMA_PORT`)
 - **Redis**: localhost:6379
-- **MariaDB**: localhost:3306 (internal only)
-- **Jaeger UI**: http://localhost:9016 (or configured port via `JAEGER_QUERY_PORT`)
+- **MariaDB**: localhost:3307 (external), `db:3306` (internal Docker network)
+- **Jaeger UI**: http://localhost:9016 (configurable via `JAEGER_QUERY_PORT`)
+- **Jaeger OTLP gRPC**: localhost:4317 (internal)
+- **Jaeger Collector HTTP**: localhost:14268
 
 ### Stop Containers
 ```bash
@@ -203,7 +207,8 @@ laravel-frankenphp-docker-demo/
 ├── tests/                    # Test files
 ├── docker/                   # Docker configurations
 │   ├── Dockerfile            # FrankenPHP setup
-│   └── entrypoint.sh         # Container startup script
+│   ├── Caddyfile             # Caddy HTTP configuration
+│   └── entrypoint-http.sh    # Container startup script
 ├── docker-compose.yml        # Docker services orchestration
 ├── .env.example              # Example environment file
 └── README.md                 # This file
@@ -213,48 +218,48 @@ laravel-frankenphp-docker-demo/
 
 ### Architecture Overview
 ```
-Client Request → Nginx (Reverse Proxy) → FrankenPHP Application
-                     ↓
-              Internal Network (laravel)
-                     ↓
-         ┌────────────┬────────────┬──────────────┐
-         ↓            ↓            ↓              ↓
-    MariaDB       Redis         Jaeger      phpMyAdmin
-   (Database)   (Cache/Queue)  (Tracing)   (Database GUI)
+Client Request (HTTP) → Port 9000
+         ↓
+   Caddy Web Server
+         ↓
+   FrankenPHP (Laravel App)
+         ↓
+   Internal Network (laravel)
+         ↓
+   ┌──────────┬────────────┬──────────────┬──────────────┐
+   ↓          ↓            ↓              ↓              ↓
+MariaDB    Redis        Jaeger      phpMyAdmin      Network
+(Database) (Cache)    (Tracing)   (Database GUI)    (Bridge)
 ```
 
-### 1. **Nginx (nginx)** - Reverse Proxy
-- Lightweight HTTP server and reverse proxy
-- Serves static files (CSS, JS, images)
-- Proxies requests to FrankenPHP
-- Gzip compression enabled
-- Security headers configured
-- Port: 9000 (public, configurable via `APP_PORT`)
+### 1. **FrankenPHP (app)** - Application Server
+- FrankenPHP with Caddy web server
+- Laravel 13.12.0 PHP framework
+- HTTP-only configuration for local development
+- Port: 80 (internal) → 9000 (host/external)
+- Automatically initializes cache and configurations
+- Entry point: `/app/public/index.php`
+- Supports Fiber for async/concurrent tasks
 
-### 2. **FrankenPHP (app)**
-- Modern PHP runtime with Fiber support (Alpine Linux)
-- Automatic HTTPS with Caddy
-- Zero-downtime deployment
-- Port: 80 (internal only, not exposed - accessed via Nginx)
-
-### 3. **MariaDB Database (db)**
+### 2. **MariaDB Database (db)**
 - Version: MariaDB 11.4 Alpine (lightweight, drop-in replacement for MySQL)
 - Default database: `laravel`
-- Port: 3306
+- Port: 3306 (internal) → 3307 (host)
 - Health check: ✅ Included
+- User: `laravel` / Password: `password`
 
-### 4. **Redis Cache (redis)**
+### 3. **Redis Cache (redis)**
 - Used for caching and queue
 - Version: Redis 7 Alpine (lightweight)
 - Port: 6379
 - Health check: ✅ Included
 
-### 5. **phpMyAdmin (phpmyadmin)** (Optional)
+### 4. **phpMyAdmin (phpmyadmin)** (Optional)
 - GUI for managing MariaDB database
-- Port: 9001
-- Username: `laravel` / Password: `password`
+- Port: 9001 (access via http://localhost:9001)
+- Login: `laravel` / `password`
 
-### 6. **Jaeger (jaeger)**
+### 5. **Jaeger (jaeger)**
 - Distributed tracing and monitoring for OpenTelemetry
 - Query UI: http://localhost:9016
 - Collector Port: 14268 (HTTP)
@@ -375,7 +380,7 @@ JAEGER_ENABLED=true                         # Enable Jaeger exporter
 
 ### Access Jaeger UI
 
-Open in browser: **http://localhost:16686**
+Open in browser: **http://localhost:9016**
 
 Here you can:
 - ✅ View distributed traces from Laravel application
@@ -414,7 +419,7 @@ JAEGER_QUERY_PORT=9016  # Default is 9016, change as needed
 
 Then restart: `docker compose down && docker compose up -d`
 
-> **Tip:** The application is accessed through Nginx (reverse proxy), which is why you access it at `APP_PORT`. FrankenPHP itself runs on port 80 internally.
+> **Tip:** The application is served by FrankenPHP (Caddy) on internal port 80, mapped to `APP_PORT` (default 9000) on the host. No Nginx or reverse proxy needed — Caddy handles everything.
 
 #### **Database connection error**
 ```bash
@@ -579,10 +584,8 @@ docker compose exec app php artisan tinker
 For development with file watcher (auto-reload), use:
 
 ```bash
-# Watch mode for CSS/JS
-docker compose exec app npm run dev
-
-# Or if using Vite
+# This project uses Tailwind CSS via CDN — no build step needed for local dev
+# If you add Vite/npm assets in the future:
 docker compose exec app npm run dev -- --host 0.0.0.0
 ```
 
@@ -599,7 +602,7 @@ nano database/migrations/2024_*.php
 docker compose exec app php artisan migrate
 
 # Access database via phpMyAdmin
-# http://localhost:8080
+# http://localhost:9001
 ```
 
 ### Testing

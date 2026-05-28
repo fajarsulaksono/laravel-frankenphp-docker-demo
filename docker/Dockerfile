@@ -61,8 +61,15 @@ RUN npm run build 2>/dev/null || true
 RUN chmod -R 755 /app/storage && \
     chmod -R 755 /app/bootstrap/cache
 
+# Copy custom entrypoint for HTTP-only mode
+COPY docker/entrypoint-http.sh /usr/local/bin/entrypoint-http
+RUN chmod +x /usr/local/bin/entrypoint-http
+
 # Expose port
 EXPOSE 80
+
+# Use custom entrypoint to disable HTTPS redirects
+ENTRYPOINT ["/usr/local/bin/entrypoint-http"]
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
