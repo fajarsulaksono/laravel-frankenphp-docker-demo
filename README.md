@@ -1,12 +1,12 @@
 # Laravel FrankenPHP Docker Demo
 
-A complete demonstration of a **Laravel 13** application running in **Docker** with **FrankenPHP** (powered by Caddy web server), showcasing real-time service health monitoring, distributed tracing with Jaeger, and a modern frontend.
+A complete demonstration of a **Laravel** application running in **Docker** with **FrankenPHP** (powered by Caddy web server), showcasing real-time service health monitoring, distributed tracing with Jaeger, and a modern frontend.
 
-**Stack:** FrankenPHP · Laravel 13 · Tailwind CSS · Google Font Outfit · MariaDB · Redis · Jaeger (OTel)
+**Stack:** FrankenPHP · Laravel · MariaDB · Redis · Jaeger (OTel)
 
 ## 📋 Table of Contents
 
-- [About This Project](#about-this-project)
+- [About FrankenPHP](#about-frankenphp)
 - [Requirements](#requirements)
 - [Installation & Setup](#installation--setup)
 - [Running the Application](#running-the-application)
@@ -23,7 +23,6 @@ A complete demonstration of a **Laravel 13** application running in **Docker** w
 
 ### Frontend
 - **Tailwind CSS** - Utility-first CSS framework
-- **Google Font Outfit** - Professional typography
 - **Responsive Design** - Mobile-friendly layouts
 
 ### Infrastructure

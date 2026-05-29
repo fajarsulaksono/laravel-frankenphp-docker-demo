@@ -51,7 +51,7 @@ services:
     networks:
       - laravel
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -uroot -p\"$${MARIADB_ROOT_PASSWORD}\" --silent"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -104,7 +104,7 @@ services:
     networks:
       - laravel
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:16686/"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:16686/ >/dev/null"]
       interval: 10s
       timeout: 5s
       retries: 5
