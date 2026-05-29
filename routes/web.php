@@ -5,6 +5,4 @@ use App\Http\Controllers\HomeController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// API Routes
-Route::get('/api/demo', [HomeController::class, 'getDemoData']);
-Route::get('/api/health', [HomeController::class, 'health']);
+Route::get('/{any}', [HomeController::class, 'index'])->where('any', '.*');

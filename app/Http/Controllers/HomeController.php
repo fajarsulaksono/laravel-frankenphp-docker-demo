@@ -128,6 +128,8 @@ class HomeController extends Controller
     {
         return view('app', [
             'services' => $this->checkServices(),
+            'phpVersion' => phpversion(),
+            'laravelVersion' => app()->version(),
         ]);
     }
 
@@ -149,7 +151,7 @@ class HomeController extends Controller
     }
 
     /**
-     * API: Get health check
+     * API: Get health check with service details
      */
     public function health(): JsonResponse
     {
@@ -158,6 +160,9 @@ class HomeController extends Controller
             'database' => 'connected',
             'cache' => 'active',
             'queue' => 'running',
+            'services' => $this->checkServices(),
+            'php_version' => phpversion(),
+            'laravel_version' => app()->version(),
         ]);
     }
 }

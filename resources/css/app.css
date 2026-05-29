@@ -1,4 +1,2 @@
-/* Tailwind CSS v4 */
 @import "tailwindcss";
-
-/* Custom styles */
+@plugin "daisyui";
