@@ -43,7 +43,17 @@ yarn-error.log*
 package-lock.json
 yarn.lock
 
+# Bootstrap cache
+/bootstrap/cache/*.php
+
+# Storage (generated files)
+/storage/framework/cache/data
+/storage/framework/sessions
+/storage/framework/views
+/storage/logs/*.log
+
 # Production
+/public/build
 /public/hot
 /public/storage
 /storage/*.key
