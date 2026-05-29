@@ -138,7 +138,7 @@ docker compose down -v
 
 When containers start, the `docker/entrypoint-http.sh` script automatically:
 1. ✅ Creates required directories (`bootstrap/cache`, `storage/*`)
-2. ✅ Sets folder permissions (`chmod 777`)
+2. ✅ Sets folder permissions (`chmod 755`)
 3. ✅ Clears old config/view/cache
 4. ✅ Warms up config cache (`php artisan config:cache`)
 5. ✅ Starts FrankenPHP with the custom `Caddyfile`
