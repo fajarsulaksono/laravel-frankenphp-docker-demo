@@ -1,6 +1,6 @@
 # Laravel FrankenPHP Docker Demo
 
-A complete demonstration of a **Laravel** application running in **Docker** with **FrankenPHP** (powered by Caddy web server), showcasing real-time service health monitoring, distributed tracing with Jaeger, and a modern frontend.
+A complete demonstration of a **Laravel** application running in **Docker** with **FrankenPHP** (powered by Caddy web server), showcasing real-time service health monitoring, distributed tracing with Jaeger/OpenTelemetry.
 
 **Stack:** FrankenPHP · Laravel · MariaDB · Redis · Jaeger (OTel)
 
@@ -14,25 +14,7 @@ A complete demonstration of a **Laravel** application running in **Docker** with
 - [Useful Commands](#useful-commands)
 - [Troubleshooting](#troubleshooting)
 
-## �️ Tech Stack
-
-### Backend
-- **Laravel 13** - Latest PHP framework
-- **FrankenPHP** - Modern PHP runtime with Fiber support
-- **Alpine Linux** - Lightweight base images
-
-### Frontend
-- **Tailwind CSS** - Utility-first CSS framework
-- **Responsive Design** - Mobile-friendly layouts
-
-### Infrastructure
-- **Caddy** - HTTP server with automatic configuration
-- **MariaDB 11.4** - Alpine-based database
-- **Redis 7** - Alpine-based cache and queue
-- **Jaeger** - Distributed tracing and OpenTelemetry
-- **Docker Compose** - Multi-container orchestration
-
-## ℹ️ About FrankenPHP
+## About FrankenPHP
 
 **FrankenPHP** is a modern PHP runtime built on top of the [Caddy](https://caddyserver.com) web server:
 - ✅ Native PHP runtime — no PHP-FPM needed
@@ -44,13 +26,13 @@ A complete demonstration of a **Laravel** application running in **Docker** with
 
 This project uses FrankenPHP's `dunglas/frankenphp:latest-alpine` image with a custom `Caddyfile` configured for HTTP-only local development.
 
-## 📦 Requirements
+## Requirements
 
 - Docker (version 20.10+)
 - Docker Compose (version 1.29+)
 - Git
 
-## 🔧 Installation & Setup
+## Installation & Setup
 
 ### Quick Start (First Time Setup)
 
@@ -163,7 +145,7 @@ When containers start, the `docker/entrypoint-http.sh` script automatically:
 
 **You don't need to run these commands manually, everything is automated!**
 
-## ▶️ Running the Application
+## Running the Application
 
 ### Build and Start Containers
 ```bash
@@ -191,7 +173,7 @@ docker compose down
 docker compose logs -f app
 ```
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```
 laravel-frankenphp-docker-demo/
@@ -264,7 +246,7 @@ MariaDB    Redis        Jaeger      phpMyAdmin      Network
 - Collector Port: 14268 (HTTP)
 - Agent Port: 6831 (UDP)
 
-## 🎯 Useful Commands
+## Useful Commands
 
 ### Artisan Commands
 ```bash
@@ -387,7 +369,7 @@ Here you can:
 - ✅ Identify bottlenecks & slow queries
 - ✅ Trace database queries, Redis calls, HTTP requests
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Issues During First Time Setup
 
