@@ -6,7 +6,7 @@ cd /app
 
 # Create necessary directories
 mkdir -p bootstrap/cache storage/logs storage/framework/cache/data storage/framework/sessions storage/framework/views
-chmod -R 777 bootstrap/cache storage
+chmod -R 755 bootstrap/cache storage
 
 # Clear old cache
 php artisan cache:clear 2>/dev/null || true
